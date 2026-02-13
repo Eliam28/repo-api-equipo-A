@@ -1,5 +1,5 @@
 import xmlrpc.client
-from app.Core.config import settings
+from app.core.config import settings
 
 common = xmlrpc.client.ServerProxy(f"{settings.ODOO_URL}/xmlrpc/2/common")
 uid = common.authenticate(
