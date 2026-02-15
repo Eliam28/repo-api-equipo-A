@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.providers_o.routes import router as providers_router
+from app.API.providers_o.routes import router as providers_router
 from app.API.products.routes import router as products_router
 
 router = APIRouter()
