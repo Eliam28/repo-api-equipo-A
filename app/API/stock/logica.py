@@ -1,5 +1,5 @@
-from app.core.odoo_client import models, uid
-from app.core.config import settings
+from app.Core.odoo_client import models, uid
+from app.Core.config import settings
 
 def get_stock_products():
     products = models.execute_kw(
