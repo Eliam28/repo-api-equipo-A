@@ -1,36 +1,20 @@
 from fastapi import APIRouter
-from typing import List
-from app.API.prestashop.payments.schema_json import Payment
 from app.Core.prestashop_client import prestashop_get
+from app.API.prestashop.utils import ps_success, ps_error
 
 router = APIRouter()
 
-@router.get("/", response_model=List[Payment])
+fieldspayments = "id,order_reference,amount,payment_method,transaction_id,date_add"
+
+@router.get("/")
 def get_payments():
+    try:
+        data = prestashop_get("order_payments", fieldspayments)
 
-    data = prestashop_get(
-        "api/order_payments",
-        fields="id,order_reference,amount,payment_method,transaction_id,date_add"
-    )
+        if not data:
+            return ps_error("404", "No se encontraron pagos")
+        
+        return ps_success(data)
 
-    # 👇 Si prestashop ya devuelve lista, úsala directamente
-    if isinstance(data, list):
-        payments = data
-    else:
-        payments = data.get("order_payments", [])
-
-    formatted = []
-
-    for p in payments:
-        formatted.append(
-            Payment(
-                id=int(p["id"]),
-                order_reference=p.get("order_reference"),
-                amount=float(p.get("amount", 0)),
-                payment_method=p.get("payment_method"),
-                transaction_id=p.get("transaction_id"),
-                date_add=p.get("date_add"),
-            )
-        )
-
-    return formatted
+    except Exception as e:
+        return ps_error("500", str(e))
