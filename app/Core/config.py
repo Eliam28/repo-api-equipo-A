@@ -5,6 +5,9 @@ class Settings(BaseSettings):
     ODOO_DB: str
     ODOO_USER: str
     ODOO_PASSWORD: str
+    PRESTASHOP_URL: str
+    API_KEY: str
+
 
     class Config:
         env_file = ".env"

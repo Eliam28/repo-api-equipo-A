@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.API.products.schema_json import Product
+from app.API.odoo.products.schema_json import Product
 from typing import List
 from app.Core.odoo_client import models, uid
 from app.Core.config import settings
