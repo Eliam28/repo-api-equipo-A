@@ -12,23 +12,17 @@ def get_payments():
         "api/order_payments",
         fields="id,order_reference,amount,payment_method,transaction_id,date_add"
     )
-    if isinstance(data, list):
-        payments = data
-    else:
-        payments = data.get("order_payments", [])
 
-    formatted = []
+    payments = data["order_payments"]
 
-    for p in payments:
-        formatted.append(
-            Payment(
-                id=int(p["id"]),
-                order_reference=p.get("order_reference"),
-                amount=float(p.get("amount", 0)),
-                payment_method=p.get("payment_method"),
-                transaction_id=p.get("transaction_id"),
-                date_add=p.get("date_add"),
-            )
+    return [
+        Payment(
+            id=int(p["id"]),
+            order_reference=p.get("order_reference"),
+            amount=float(p.get("amount", 0)),
+            payment_method=p.get("payment_method"),
+            transaction_id=p.get("transaction_id"),
+            date_add=p.get("date_add"),
         )
-
-    return formatted
+        for p in payments
+    ]
