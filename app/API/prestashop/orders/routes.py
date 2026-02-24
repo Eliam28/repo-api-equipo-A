@@ -1,5 +1,6 @@
 from fastapi import APIRouter
 from app.Core.prestashop_client import prestashop_get
+from app.API.prestashop.utils  import ps_error, ps_success
 
 router = APIRouter()
 
@@ -7,5 +8,18 @@ fieldsorders = "id,id_customer,total_paid,date_add,reference"
 
 @router.get("/")
 def get_products():
-    products = prestashop_get("orders", fieldsorders)
-    return products
+    try:
+        data = prestashop_get("orders", fieldsorders)
+
+        if not data:
+            return ps_error("404", "No se encontraron ordenes")
+        
+        return ps_success(data)
+    
+    except Exception as e:
+        return ps_error("500",str(e) )
+    
+
+        
+
+        
