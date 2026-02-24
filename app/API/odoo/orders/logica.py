@@ -1,6 +1,6 @@
 from app.Core.odoo_client import models, uid
 from app.Core.config import settings
-from app.API.orders.schema_json import Order
+from app.API.odoo.orders.schema_json import Order
 
 def get_orders():
     orders = models.execute_kw(

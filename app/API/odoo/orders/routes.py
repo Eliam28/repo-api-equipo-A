@@ -1,6 +1,6 @@
 from fastapi import APIRouter
-from app.API.orders.schema_json import Order
-from app.API.orders.logica import get_orders
+from app.API.odoo.orders.schema_json import Order
+from app.API.odoo.orders.logica import get_orders
 from typing import List
 
 router = APIRouter()
