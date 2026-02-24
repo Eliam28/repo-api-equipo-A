@@ -12,8 +12,6 @@ def get_payments():
         "api/order_payments",
         fields="id,order_reference,amount,payment_method,transaction_id,date_add"
     )
-
-    # 👇 Si prestashop ya devuelve lista, úsala directamente
     if isinstance(data, list):
         payments = data
     else:
