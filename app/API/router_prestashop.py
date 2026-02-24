@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from app.API.prestashop.products.routes import router as products_router
 from app.API.prestashop.orders.routes import router as orders_router
+from app.API.prestashop.payments.routes import router as payments_router
 
 router = APIRouter()
 
@@ -13,5 +14,11 @@ router.include_router(
 router.include_router(
     orders_router,
     prefix="/orders",
-    tags=["orders"]
+    tags=["Orders"]
+)
+
+router.include_router(
+    payments_router,
+    prefix="/payments",
+    tags=["Payments"]
 )
