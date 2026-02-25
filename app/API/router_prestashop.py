@@ -28,6 +28,7 @@ router.include_router(
     proveedores_router,
     prefix="/suppliers",
     tags=["Suppliers"]
+)
 router.include_router(
     customers_router,
     prefix="/customers",
