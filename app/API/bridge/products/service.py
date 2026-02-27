@@ -52,3 +52,62 @@ def sync_products():
     "Saltados": saltados
   }
 
+def create_one_product_by_reference(reference: str):
+
+  # Buscar en Odoo por default_code
+  rows = models.execute_kw(
+    settings.ODOO_DB,
+    uid,
+    settings.ODOO_PASSWORD,
+    'product.product',
+    'search_read',
+    [[['default_code', '=', reference]]],
+    {'fields':['id','name','list_price','default_code','qty_available']}
+  )
+
+  if not rows:
+    raise Exception("Producto no encontrado en Odoo con esa referencia")
+
+  product = rows[0]
+
+  if product.get("default_code") is False:
+    product["default_code"] = None
+
+  ref = product.get("default_code")
+  if not ref:
+    raise Exception("El producto no tiene referencia (default_code)")
+
+  price = float(product.get("list_price") or 0)
+  stock = float(product.get("qty_available") or 0)
+
+  # No crear si precio 0 y stock 0
+  if price == 0 and stock == 0:
+    return {
+      "created": False,
+      "skipped": True,
+      "message": "No se crea: precio 0 y stock 0",
+      "reference": ref,
+      "price": price,
+      "stock": stock
+    }
+
+  # No duplicar en PrestaShop
+  ps = prestashop_get("products", fields="id,reference", filters={"reference": ref})
+
+  if "products" in ps and ps["products"]:
+    return {
+      "created": False,
+      "message": "Ya existe en PrestaShop",
+      "reference": ref
+    }
+
+  xml = odoo_to_prestashop(product)
+  prestashop_post("products", xml)
+
+  return {
+    "created": True,
+    "message": "Producto creado en PrestaShop",
+    "reference": ref,
+    "price": price,
+    "stock": stock
+  }
