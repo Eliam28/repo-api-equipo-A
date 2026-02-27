@@ -1,7 +1,9 @@
 from app.Core.odoo_client import models, uid
 from app.Core.config import settings
-from app.Core.prestashop_client import prestashop_get, prestashop_post
+from app.Core.prestashop_client import prestashop_get, prestashop_post, prestashop_put
 from app.API.bridge.products.mapper import odoo_to_prestashop
+from app.API.bridge.products.mapper_stock import stock_xml
+import xml.etree.ElementTree as ET
 
 def sync_products():
   odoo_products = models.execute_kw(
@@ -11,12 +13,8 @@ def sync_products():
     'product.template',
     'search_read',
     [[]],
-    {'fields':['id','name','list_price','default_code']}
+    {'fields':['id','name','list_price','default_code','qty_available']}
   )
-
-  for p in odoo_products:
-    if p.get("default_code") is False:
-      p["default_code"] = None
 
   prestashop_data = prestashop_get("products",fields="id,reference")
 
@@ -27,29 +25,61 @@ def sync_products():
       if prod.get("reference"):
         existing_refs.add(prod["reference"])
 
-  creados = 0
-  saltados = 0
+  created_products = []
+  skipped_products = []
+  created = 0
+  skipped = 0
 
   for product in odoo_products:
     ref = product.get("default_code")
+    price = product.get("list_price")
+    stock = product.get("qty_available")
+    name = product.get("name")
 
     if not ref:
-      saltados += 1
+      skipped += 1
+      skipped_products.append(name)
       continue
 
     if ref in existing_refs:
-      saltados += 1
+      skipped += 1
+      skipped_products.append(name)
+      continue
+
+    if price is None or float(price) <=0:
+      skipped += 1
+      skipped_products.append(name)
+      continue
+
+    if stock is None or float(stock) <=0:
+      skipped += 1
+      skipped_products.append(name)
       continue
 
     xml = odoo_to_prestashop(product)
 
-    prestashop_post("products", xml)
+    response = prestashop_post("products", xml)
 
-    creados +=1
+    root = ET.fromstring(response)
+
+    product_id = int(root.find(".//id").text)
+
+    stock_data = prestashop_get("stock_availables",filters={"id_product": product_id})
+
+    stock_id = stock_data["stock_availables"][0]["id"]
+
+    stock_body = stock_xml(stock_id, product_id, stock)
+
+    prestashop_put(f"stock_availables/{stock_id}", stock_body)
+
+    created +=1
+    created_products.append(name)
   
   return {
-    "Creados": creados,
-    "Saltados": saltados
+    "Creados" : created_products,
+    "Saltados": skipped_products,
+    "Total creados": created,
+    "Total saltados": skipped
   }
 
 def create_one_product_by_reference(reference: str):
