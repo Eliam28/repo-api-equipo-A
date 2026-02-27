@@ -1,7 +1,9 @@
 from app.Core.odoo_client import models, uid
 from app.Core.config import settings
-from app.Core.prestashop_client import prestashop_get, prestashop_post
+from app.Core.prestashop_client import prestashop_get, prestashop_post, prestashop_put
 from app.API.bridge.products.mapper import odoo_to_prestashop
+from app.API.bridge.products.mapper_stock import stock_xml
+import xml.etree.ElementTree as ET
 
 def sync_products():
   odoo_products = models.execute_kw(
@@ -56,7 +58,19 @@ def sync_products():
 
     xml = odoo_to_prestashop(product)
 
-    prestashop_post("products", xml)
+    response = prestashop_post("products", xml)
+
+    root = ET.fromstring(response)
+
+    product_id = int(root.find(".//id").text)
+
+    stock_data = prestashop_get("stock_availables",filters={"id_product": product_id})
+
+    stock_id = stock_data["stock_availables"][0]["id"]
+
+    stock_body = stock_xml(stock_id, product_id, stock)
+
+    prestashop_put(f"stock_availables/{stock_id}", stock_body)
 
     created +=1
     created_products.append(name)

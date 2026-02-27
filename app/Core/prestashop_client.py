@@ -41,3 +41,19 @@ def prestashop_post(endpoint:str, xml_body: str):
   response.raise_for_status()
 
   return response.text
+
+def prestashop_put(endpoint: str, xml_body: str):
+    url = f"{settings.PRESTASHOP_URL}/{endpoint}"
+
+    headers = {
+        "Content-Type": "application/xml"
+    }
+
+    params = {
+        "ws_key": settings.API_KEY
+    }
+
+    response = requests.put(url,params=params,data=xml_body.encode("utf-8"),headers=headers)
+
+    response.raise_for_status()
+    return response.text
