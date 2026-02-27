@@ -24,3 +24,20 @@ def prestashop_get(endpoint: str, fields: str|None = None, filters: dict|None = 
   response.raise_for_status()
 
   return response.json()
+
+def prestashop_post(endpoint:str, xml_body: str):
+  url = f"{settings.PRESTASHOP_URL}/{endpoint}"
+
+  headers = {
+      "Content-Type": "application/xml"
+  }
+
+  params = {
+      "ws_key": settings.API_KEY
+  } 
+
+  response = requests.post(url,params=params,data=xml_body.encode("utf-8"),headers=headers)
+
+  response.raise_for_status()
+
+  return response.text

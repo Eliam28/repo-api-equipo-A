@@ -37,3 +37,4 @@ router.include_router(
     prefix="/stock",
     tags=["Stock"]
 )
+
