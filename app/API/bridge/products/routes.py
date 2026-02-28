@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from app.API.bridge.products.service import sync_products, create_one_product_by_reference
 from app.API.prestashop.utils import ps_success, ps_error
 from app.Core.prestashop_client import prestashop_get, prestashop_put
+from app.API.bridge.products.mapper_product_update import product_update
 
 
 router = APIRouter()
@@ -25,7 +26,7 @@ def create_one(reference: str):
     return ps_error("500", str(e))
 
 
-@router.delete("/ref/{reference}")  #Aún no funciona, tengo que pasar la respuesta a un xml para poder hacer el put 👍
+@router.delete("/ref/{reference}")  
 def deactivate_product(reference: str):
     try:
         data = prestashop_get("products", filters={"reference": reference})
@@ -33,14 +34,30 @@ def deactivate_product(reference: str):
         if not data:
             return ps_error("404", "No se encontró un producto con la referencia dada")
         
-        id = data['products'][0]['id']
+        product = data['products'][0]
+        id = product['id']
 
-        product = prestashop_get(f"products/{id}")
+        if (isinstance(product['name'], list)):
+           name = product['name'][0]['value']
+        else:
+           name = product['name']
         
-        product['product']['active'] = "0"
-        prestashop_put("products", product)
+        if (isinstance(product['link_rewrite'], list)):
+           slug = product['link_rewrite'][0]['value']
+        else:
+           slug = product['link_rewrite']
 
-        return ps_success(product)
+        xml = product_update(
+          id = id,
+          active = "0",
+          name = name,
+          slug = slug,
+          reference = reference
+        )
+
+        prestashop_put(f"products/{id}", xml)
+
+        return ps_success(data)
     
     except Exception as e:
         return ps_error("500",str(e) )
