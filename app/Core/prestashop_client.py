@@ -53,7 +53,27 @@ def prestashop_put(endpoint: str, xml_body: str):
         "ws_key": settings.API_KEY
     }
 
-    response = requests.put(url,params=params,data=xml_body.encode("utf-8"),headers=headers)
+    response = requests.put(
+        url,
+        params=params,
+        data=xml_body.encode("utf-8"),
+        headers=headers
+    )
+
+    print("STATUS:", response.status_code)
+    print("RESPONSE:", response.text)  # 👈 AGREGA ESTO
 
     response.raise_for_status()
+
+    return response.text
+def prestashop_get_xml(endpoint: str):
+    url = f"{settings.PRESTASHOP_URL}/{endpoint}"
+
+    params = {
+        "ws_key": settings.API_KEY
+    }
+
+    response = requests.get(url, params=params)
+    response.raise_for_status()
+
     return response.text
