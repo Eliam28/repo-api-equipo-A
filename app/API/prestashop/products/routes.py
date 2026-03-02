@@ -39,7 +39,6 @@ def get_orders_ref(reference: str):
 @router.put("/{reference}")
 def update_product(reference: str, payload: ProductUpdate):
     try:
-        # 🔎 Buscar producto por referencia
         search = prestashop_get("products", filters={"reference": reference})
 
         if "products" not in search or len(search["products"]) == 0:
@@ -47,13 +46,10 @@ def update_product(reference: str, payload: ProductUpdate):
 
         product_id = search["products"][0]["id"]
 
-        # 📥 Obtener XML completo original
         xml_data = prestashop_get_xml(f"products/{product_id}")
         root = ET.fromstring(xml_data)
-
         product_node = root.find("product")
 
-        # 🔥 Eliminar campos NO editables (IMPORTANTÍSIMO)
         non_writable_fields = [
             "manufacturer_name",
             "quantity",
@@ -61,7 +57,13 @@ def update_product(reference: str, payload: ProductUpdate):
             "position_in_category",
             "type",
             "date_add",
-            "date_upd"
+            "date_upd",
+            "id",
+            "id_shop_default",
+            "cache_default_attribute",
+            "cache_is_pack",
+            "cache_has_attachments",
+            "advanced_stock_management"
         ]
 
         for field in non_writable_fields:
@@ -69,26 +71,15 @@ def update_product(reference: str, payload: ProductUpdate):
             if node is not None:
                 product_node.remove(node)
 
-        # 🛠 Modificar solo los campos enviados
-        if payload.price is not None:
-            price_node = product_node.find("price")
-            if price_node is not None:
-                price_node.text = str(payload.price)
+        update_data = payload.model_dump(exclude_none=True)
 
-        if payload.active is not None:
-            active_node = product_node.find("active")
-            if active_node is not None:
-                active_node.text = str(payload.active)
+        for field, value in update_data.items():
+            node = product_node.find(field)
+            if node is not None:
+                node.text = str(value)
 
-        if payload.wholesale_price is not None:
-            wholesale_node = product_node.find("wholesale_price")
-            if wholesale_node is not None:
-                wholesale_node.text = str(payload.wholesale_price)
-
-        # 📤 Convertir nuevamente a XML
         xml_body = ET.tostring(root, encoding="utf-8").decode("utf-8")
 
-        # 🚀 Enviar PUT
         prestashop_put(f"products/{product_id}", xml_body)
 
         return ps_success("Producto actualizado correctamente")
