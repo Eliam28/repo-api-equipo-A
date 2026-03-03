@@ -43,7 +43,7 @@ def deactivate_product(reference: str):
         else:
            name = product['name']
 
-        xml = product_update(id = id, active = "0", price = price)
+        xml = product_update(id = id, active = "0", price = price, reference= reference, slug= reference, name = name, category_id = 2)
 
         prestashop_put(f"products/{id}", xml)
 

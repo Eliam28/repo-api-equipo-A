@@ -63,6 +63,10 @@ def prestashop_put(endpoint: str, xml_body: str):
     print("STATUS:", response.status_code)
     print("RESPONSE:", response.text)  # 👈 AGREGA ESTO
 
+    if response.status_code != 200:
+        # PrestaShop envía un XML detallando el error exacto aquí
+        print(f"DEBUG PRESTASHOP ERROR: {response.text}")
+
     response.raise_for_status()
 
     return response.text
