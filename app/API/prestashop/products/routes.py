@@ -51,20 +51,14 @@ def update_product(reference: str, payload: ProductUpdate):
         product_node = root.find("product")
 
         non_writable_fields = [
-            "manufacturer_name",
-            "quantity",
-            "id_default_image",
-            "position_in_category",
-            "type",
-            "date_add",
-            "date_upd",
-            "id",
-            "id_shop_default",
-            "cache_default_attribute",
-            "cache_is_pack",
-            "cache_has_attachments",
-            "advanced_stock_management"
-        ]
+        "manufacturer_name",
+        "quantity",
+        "id_default_image",
+        "position_in_category",
+        "type",
+        "date_add",
+        "date_upd"
+    ]
 
         for field in non_writable_fields:
             node = product_node.find(field)
