@@ -8,6 +8,10 @@ class Settings(BaseSettings):
     PRESTASHOP_URL: str
     API_KEY: str
 
+    WP_URL: str
+    WP_CONSUMER_KEY: str
+    WP_CONSUMER_SECRET: str
+
 
     class Config:
         env_file = ".env"
