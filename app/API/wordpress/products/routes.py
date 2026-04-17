@@ -77,3 +77,11 @@ def create_products():
         "Total saltados": skipped
     }
 
+@router.get("/")
+def get_woocommerce_products():
+    response = wcapi.get("products")
+
+    if response.status_code == 200:
+        return response.json()
+    else:
+        raise Exception(f"Error: {response.status_code} - {response.text}")
