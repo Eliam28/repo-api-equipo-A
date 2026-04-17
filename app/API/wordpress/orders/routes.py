@@ -58,8 +58,26 @@ def create_orders():
     )
 
     created = []
+    skipped = []
+
+    existing_response = wcapi.get("orders", params={"per_page": 100})
+
+    existing_odoo_orders = set()
+
+    if existing_response.status_code == 200:
+        existing_orders = existing_response.json()
+
+        for o in existing_orders:
+            for meta in o.get("meta_data", []):
+                if meta["key"] == "odoo_order":
+                    existing_odoo_orders.add(meta["value"])
 
     for order in orders:
+
+        if order['name'] in existing_odoo_orders:
+            print(f"Orden ya existe: {order['name']}")
+            skipped.append(order['name'])
+            continue
 
         lines = models.execute_kw(
             settings.ODOO_DB,
@@ -119,7 +137,13 @@ def create_orders():
         data = {
             "payment_method": "cod",
             "set_paid": True,
-            "line_items": line_items
+            "line_items": line_items,
+            "meta_data": [
+                {
+                    "key": "odoo_order",
+                    "value": order['name']
+                }
+            ]
         }
 
         response = wcapi.post("orders", data)
@@ -131,4 +155,7 @@ def create_orders():
         if response.status_code == 201:
             created.append(order['name'])
 
-    return {"created": created}
+    return {
+        "created": created,
+        "skipped": skipped
+    }
