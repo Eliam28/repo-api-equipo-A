@@ -5,7 +5,7 @@ from app.API.wordpress.clientes.schema_json import CustomerCreate, Address
 
 router = APIRouter()
 
-@app.post("/")
+@router.post("/")
 async def create_woocommerce_customer(customer: CustomerCreate):
     # Convertimos el modelo de Pydantic a un diccionario de Python
     customer_data = customer.model_dump() 
