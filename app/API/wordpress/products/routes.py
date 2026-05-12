@@ -85,3 +85,4 @@ def get_woocommerce_products():
         return response.json()
     else:
         raise Exception(f"Error: {response.status_code} - {response.text}")
+##probando regla de ramas
